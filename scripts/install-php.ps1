@@ -52,12 +52,14 @@ if ((Test-Path -path $phpINIPath) -ne $True)
 
 # Replace PHP ini vars
 (Get-Content $phpINIPath) | ForEach-Object {
-    $_ -replace ';?date.timezone.*', 'date.timezone = "Pacific/Auckland"' `
-        -replace ';?upload_max_filesize.*', 'upload_max_filesize = 10M' `
-        -replace ';?display_errors.*', 'display_errors = On' `
-        -replace ';?upload_tmp_dir.*', "upload_tmp_dir = `"$phpTemp`"" `
-        -replace ';?session.save_path.*', "session.save_path = `"$phpTemp`"" `
-        -replace ';?error_log.*', "error_log = `"$phpLog\php-errors.log`""
+    $_ -replace '[; ]*date.timezone.*', 'date.timezone = "Pacific/Auckland"' `
+        -replace '[; ]*upload_max_filesize.*', 'upload_max_filesize = 10M' `
+        -replace '[; ]*display_errors.*', 'display_errors = On' `
+        -replace '[; ]*upload_tmp_dir.*', "upload_tmp_dir = `"$phpTemp`"" `
+        -replace '[; ]*session.save_path.*', "session.save_path = `"$phpTemp`"" `
+        -replace '[; ]*error_log.*', "error_log = `"$phpLog\php-errors.log`"" `
+        -replace '[; ]*extension=php_intl.dll.*', 'extension=php_intl.dll' `
+        -replace '[; ]*extension_dir.*', "extension_dir = `"$phpVersionInstall\ext`""
 } | Set-Content $phpINIPath
 
 #Install IIS Components for PHP over FastCGI
@@ -138,6 +140,13 @@ if (!$oldPath.contains($phpVersionInstall))
 Set-ItemProperty -Path $environmentKey -name PHPRC -Value $phpVersionInstall
 $Env:PHPRC = $phpVersionInstall
 
+# Create Fast CGI application for php
+import-module WebAdministration
+$configPath = get-webconfiguration 'system.webServer/fastcgi/application' | where-object { $_.fullPath -eq $phpCGIPath }
+if (!$configPath) {
+    add-webconfiguration 'system.webserver/fastcgi' -value @{'fullPath' = $phpCGIPath }
+}
+
 # Add PHP module mapping
 if (!(Get-Webhandler -Name "PHP-FastCGI"))
 {
@@ -145,8 +154,8 @@ if (!(Get-Webhandler -Name "PHP-FastCGI"))
 }
 
 # Set web root path
-import-module WebAdministration
 set-ItemProperty 'IIS:\Sites\Default Web Site\' -name physicalPath -value $webRoot
 set-ItemProperty 'IIS:\Sites\Default Web Site\' -name logFile.directory -value $webLog
+Set-WebConfigurationProperty '//httpErrors' -PSPath 'IIS:\Sites\Default Web Site\' -name "errorMode" -value "Detailed"
 stop-website 'Default Web Site'
 start-website 'Default Web Site'
