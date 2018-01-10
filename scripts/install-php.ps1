@@ -58,6 +58,7 @@ if ((Test-Path -path $phpINIPath) -ne $True)
         -replace '[; ]*upload_tmp_dir.*', "upload_tmp_dir = `"$phpTemp`"" `
         -replace '[; ]*session.save_path.*', "session.save_path = `"$phpTemp`"" `
         -replace '[; ]*error_log.*', "error_log = `"$phpLog\php-errors.log`"" `
+        -replace '[; ]*extension=php_curl.dll.*', 'extension=php_curl.dll' `
         -replace '[; ]*extension=php_fileinfo.dll.*', 'extension=php_fileinfo.dll' `
         -replace '[; ]*extension=php_gd2.dll.*', 'extension=php_gd2.dll' `
         -replace '[; ]*extension=php_intl.dll.*', 'extension=php_intl.dll' `
@@ -136,7 +137,7 @@ $environmentKey = 'Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control
 $oldPath = (Get-ItemProperty -Path $environmentKey -Name PATH).Path
 if (!$oldPath.contains($phpVersionInstall))
 {
-    $newPath = $oldPath + ';' + $phpVersionInstalvagrant
+    $newPath = $oldPath + ';' + $phpVersionInstall
     Set-ItemProperty -Path $environmentKey -Name PATH -Value $newPath
 }
 
