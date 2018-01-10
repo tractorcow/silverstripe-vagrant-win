@@ -58,7 +58,10 @@ if ((Test-Path -path $phpINIPath) -ne $True)
         -replace '[; ]*upload_tmp_dir.*', "upload_tmp_dir = `"$phpTemp`"" `
         -replace '[; ]*session.save_path.*', "session.save_path = `"$phpTemp`"" `
         -replace '[; ]*error_log.*', "error_log = `"$phpLog\php-errors.log`"" `
+        -replace '[; ]*extension=php_fileinfo.dll.*', 'extension=php_fileinfo.dll' `
+        -replace '[; ]*extension=php_gd2.dll.*', 'extension=php_gd2.dll' `
         -replace '[; ]*extension=php_intl.dll.*', 'extension=php_intl.dll' `
+        -replace '[; ]*extension=php_mbstring.dll.*', 'extension=php_mbstring.dll' `
         -replace '[; ]*extension_dir.*', "extension_dir = `"$phpVersionInstall\ext`""
 } | Set-Content $phpINIPath
 
@@ -101,13 +104,13 @@ $ar = new-object system.security.accesscontrol.filesystemaccessrule("IIS AppPool
 $acl.setaccessrule($ar)
 set-acl $phpTemp $acl
 
-# Set web root permissions
+# Set web root permissions (full write permissions)
 if ((Test-Path -path $webRoot) -ne $True)
 {
     new-item -type directory -path $webRoot
 }
 $acl = get-acl $webRoot
-$ar = new-object system.security.accesscontrol.filesystemaccessrule("Users", "ReadAndExecute", "ContainerInherit, ObjectInherit", "None", "Allow")
+$ar = new-object system.security.accesscontrol.filesystemaccessrule("Users", "FullControl", "ContainerInherit, ObjectInherit", "None", "Allow")
 $acl.setaccessrule($ar)
 set-acl $webRoot $acl
 
