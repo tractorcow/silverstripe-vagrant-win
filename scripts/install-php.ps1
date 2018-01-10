@@ -29,7 +29,7 @@ if ((Test-Path -path $downloads) -ne $True)
     new-item -type directory -path $downloads
 }
 
-# Begin all downloads
+# Download PHP archive
 if ((Test-Path $phpDownloadFile) -ne $True)
 {
     $startTime = Get-Date
@@ -50,13 +50,14 @@ if ((Test-Path -path $phpINIPath) -ne $True)
     Copy-Item $phpINITemplate $phpINIPath
 }
 
-# Replace vars
+# Replace PHP ini vars
 (Get-Content $phpINIPath) | ForEach-Object {
-    $_ -replace ';?date.timezone.*', 'date.timezone = "Pacific/Auckland"'
-    $_ -replace ';?upload_max_filesize.*', 'upload_max_filesize = 10M'
-    $_ -replace ';?upload_tmp_dir.*', "upload_tmp_dir = `"$phpTemp`""
-    $_ -replace ';?session.save_path.*', "session.save_path = `"$phpTemp`""
-    $_ -replace ';?error_log.*', "error_log = `"$phpLog\php-errors.log`""
+    $_ -replace ';?date.timezone.*', 'date.timezone = "Pacific/Auckland"' `
+        -replace ';?upload_max_filesize.*', 'upload_max_filesize = 10M' `
+        -replace ';?display_errors.*', 'display_errors = On' `
+        -replace ';?upload_tmp_dir.*', "upload_tmp_dir = `"$phpTemp`"" `
+        -replace ';?session.save_path.*', "session.save_path = `"$phpTemp`"" `
+        -replace ';?error_log.*', "error_log = `"$phpLog\php-errors.log`""
 } | Set-Content $phpINIPath
 
 #Install IIS Components for PHP over FastCGI
@@ -66,57 +67,57 @@ start-process "c:\windows\system32\pkgmgr.exe" -ArgumentList "/iu:IIS-WebServerR
 if ((Test-Path -path $phpInstall) -ne $True)
 {
     new-item -type directory -path $phpInstall
-    $acl = get-acl $phpInstall
-    $ar = new-object system.security.accesscontrol.filesystemaccessrule("IIS AppPool\DefaultAppPool", "ReadAndExecute", "ContainerInherit, ObjectInherit", "None", "Allow")
-    $acl.setaccessrule($ar)
-    $ar = new-object system.security.accesscontrol.filesystemaccessrule("Users", "ReadAndExecute", "ContainerInherit, ObjectInherit", "None", "Allow")
-    $acl.setaccessrule($ar)
-    set-acl $phpInstall $acl
 }
+$acl = get-acl $phpInstall
+$ar = new-object system.security.accesscontrol.filesystemaccessrule("IIS AppPool\DefaultAppPool", "ReadAndExecute", "ContainerInherit, ObjectInherit", "None", "Allow")
+$acl.setaccessrule($ar)
+$ar = new-object system.security.accesscontrol.filesystemaccessrule("Users", "ReadAndExecute", "ContainerInherit, ObjectInherit", "None", "Allow")
+$acl.setaccessrule($ar)
+set-acl $phpInstall $acl
 
 # Set ACL for c:\phplog
 if ((Test-Path -path $phpLog) -ne $True)
 {
     new-item -type directory -path $phpLog
-    $acl = get-acl $phpLog
-    $ar = new-object system.security.accesscontrol.filesystemaccessrule("Users", "Modify", "Allow")
-    $acl.setaccessrule($ar)
-    $ar = new-object system.security.accesscontrol.filesystemaccessrule("IIS AppPool\DefaultAppPool", "Modify", "ContainerInherit, ObjectInherit", "None", "Allow")
-    $acl.setaccessrule($ar)
-    set-acl $phpLog $acl
 }
+$acl = get-acl $phpLog
+$ar = new-object system.security.accesscontrol.filesystemaccessrule("Users", "Modify", "Allow")
+$acl.setaccessrule($ar)
+$ar = new-object system.security.accesscontrol.filesystemaccessrule("IIS AppPool\DefaultAppPool", "Modify", "ContainerInherit, ObjectInherit", "None", "Allow")
+$acl.setaccessrule($ar)
+set-acl $phpLog $acl
 
 # Set ACL for c:\phptemp
 if ((Test-Path -path $phpTemp) -ne $True)
 {
     new-item -type directory -path $phpTemp
-    $acl = get-acl $phpTemp
-    $ar = new-object system.security.accesscontrol.filesystemaccessrule("Users", "Modify", "Allow")
-    $acl.setaccessrule($ar)
-    $ar = new-object system.security.accesscontrol.filesystemaccessrule("IIS AppPool\DefaultAppPool", "Modify", "ContainerInherit, ObjectInherit", "None", "Allow")
-    $acl.setaccessrule($ar)
-    set-acl $phpTemp $acl
 }
+$acl = get-acl $phpTemp
+$ar = new-object system.security.accesscontrol.filesystemaccessrule("Users", "Modify", "Allow")
+$acl.setaccessrule($ar)
+$ar = new-object system.security.accesscontrol.filesystemaccessrule("IIS AppPool\DefaultAppPool", "Modify", "ContainerInherit, ObjectInherit", "None", "Allow")
+$acl.setaccessrule($ar)
+set-acl $phpTemp $acl
 
 # Set web root permissions
 if ((Test-Path -path $webRoot) -ne $True)
 {
     new-item -type directory -path $webRoot
-    $acl = get-acl $webRoot
-    $ar = new-object system.security.accesscontrol.filesystemaccessrule("Users", "ReadAndExecute", "ContainerInherit, ObjectInherit", "None", "Allow")
-    $acl.setaccessrule($ar)
-    set-acl $webRoot $acl
 }
+$acl = get-acl $webRoot
+$ar = new-object system.security.accesscontrol.filesystemaccessrule("Users", "ReadAndExecute", "ContainerInherit, ObjectInherit", "None", "Allow")
+$acl.setaccessrule($ar)
+set-acl $webRoot $acl
 
 # Set web log dir permissions
 if ((Test-Path -path $webLog) -ne $True)
 {
     new-item -type directory -path $webLog
-    $acl = get-acl $webLog
-    $ar = new-object system.security.accesscontrol.filesystemaccessrule("Users", "ReadAndExecute", "ContainerInherit, ObjectInherit", "None", "Allow")
-    $acl.setaccessrule($ar)
-    set-acl $webLog $acl
 }
+$acl = get-acl $webLog
+$ar = new-object system.security.accesscontrol.filesystemaccessrule("Users", "ReadAndExecute", "ContainerInherit, ObjectInherit", "None", "Allow")
+$acl.setaccessrule($ar)
+set-acl $webLog $acl
 
 # Set user PHP PATH
 if (!$Env:PATH.Contains($phpVersionInstall))
