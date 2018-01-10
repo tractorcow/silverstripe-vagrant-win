@@ -1,28 +1,37 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-Vagrant.configure("2") do |config|
-  config.vm.box = "Svpernova09/Windows7-php7dev"
+# Failed boxes:
+# - config.vm.box = "mwrock/Windows2016" # NO IIS
 
-  # I can browse this server on localhost:9090
+Vagrant.configure("2") do |config|
+  config.vm.box = "gusztavvargadr/w16s-iis"
+  config.vm.box_version = "0.8.0"
+
+  # I can browse this server on localhost:9090/Sites/<foldername>/
   config.vm.network "forwarded_port", guest: 80, host: 9090, host_ip: "127.0.0.1"
 
-  # Enable RDP
+  # Enable WinRM
   config.vm.network :forwarded_port,
-    host: 33389,
-    guest: 3389,
-    id: "rdp",
+    guest: 5985,
+    host: 5985,
+    id: "winrm",
     auto_correct: true
 
-  # Create a private network, which allows host-only access to the machine
-  # using a specific IP.
-  # config.vm.network "private_network", ip: "192.168.33.10"
-
-  # Create a public network, which generally matched to bridged network.
-  # Bridged networks make the machine appear as another physical device on
-  # your network.
-  # config.vm.network "public_network"
-
   # Share localhost webroot
-  config.vm.synced_folder "./Sites", "/Sites"
+  config.vm.synced_folder "./Sites",
+    "/inetpub/wwwroot/Sites",
+    :create => true,
+    :mount_options => [
+      "dmode=755",
+      "fmode=755"
+    ]
+
+  # Increase boot timeout
+  config.vm.boot_timeout = 3600
+
+  config.vm.communicator = "winrm"
+  config.winrm.username = "vagrant"
+  config.winrm.password = "vagrant"
+
 end
