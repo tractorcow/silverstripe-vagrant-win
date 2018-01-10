@@ -23,8 +23,8 @@ Vagrant.configure("2") do |config|
     "/inetpub/wwwroot/Sites",
     :create => true,
     :mount_options => [
-      "dmode=755",
-      "fmode=755"
+      "dmode=777",
+      "fmode=777"
     ]
 
   # Increase boot timeout
@@ -34,4 +34,6 @@ Vagrant.configure("2") do |config|
   config.winrm.username = "vagrant"
   config.winrm.password = "vagrant"
 
+  # Run the install via powershell
+  config.vm.provision "shell", path: "scripts/install-php.ps1"
 end

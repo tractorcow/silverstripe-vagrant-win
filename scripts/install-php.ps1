@@ -62,6 +62,7 @@ if ((Test-Path -path $phpINIPath) -ne $True)
         -replace '[; ]*extension=php_gd2.dll.*', 'extension=php_gd2.dll' `
         -replace '[; ]*extension=php_intl.dll.*', 'extension=php_intl.dll' `
         -replace '[; ]*extension=php_mbstring.dll.*', 'extension=php_mbstring.dll' `
+        -replace '[; ]*extension=php_sqlite3.dll.*', 'extension=php_sqlite3.dll' `
         -replace '[; ]*extension_dir.*', "extension_dir = `"$phpVersionInstall\ext`""
 } | Set-Content $phpINIPath
 

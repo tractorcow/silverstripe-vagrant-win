@@ -17,6 +17,10 @@ vagrant up
 
 You can access your site at `http://127.0.0.1:9090/myvagrant/`
 
+# Database
+
+No MySQL is configured for this image; We suggest that you use sqlite3 instead (or set this up yourself)
+
 # RDP
 
 Install https://itunes.apple.com/us/app/microsoft-remote-desktop-8-0/id715768417?mt=12
