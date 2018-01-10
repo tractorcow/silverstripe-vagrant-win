@@ -19,6 +19,9 @@ Vagrant.configure("2") do |config|
     auto_correct: true
 
   # Share localhost webroot
+  # @todo - I can't figure out how to make these writable to PHP
+  # You can work around this by copying your site out of
+  # the share to c:\inetpub\wwwroot directly
   config.vm.synced_folder "./Sites",
     "/inetpub/wwwroot/Sites",
     :create => true,
@@ -35,5 +38,8 @@ Vagrant.configure("2") do |config|
   config.winrm.password = "vagrant"
 
   # Run the install via powershell
+  # reference: https://github.com/StefanScherer/docker-windows-box/tree/master/windows10/scripts
+  config.vm.provision "shell", path: "scripts/install-chocolatey.ps1"
+  config.vm.provision "shell", path: "scripts/install-iis.ps1"
   config.vm.provision "shell", path: "scripts/install-php.ps1"
 end
